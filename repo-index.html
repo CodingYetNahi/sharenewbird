@@ -1,0 +1,3603 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+
+<title>Bird Shooter</title>
+
+<style>
+:root{
+  --sky1:#8ed8ff;
+  --sky2:#56b7f5;
+  --panel:rgba(255,255,255,.96);
+  --text:#102332;
+  --muted:#61717d;
+  --accent:#ff6b35;
+}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:linear-gradient(var(--sky1),var(--sky2));
+  color:var(--text);
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:none;
+}
+
+body{
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+#app{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+
+header{
+  flex:0 0 auto;
+  width:100%;
+  padding:10px 12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  z-index:10;
+}
+
+.title{
+  font-size:20px;
+  font-weight:900;
+  letter-spacing:.5px;
+}
+
+.subtitle{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+.hud{
+  display:flex;
+  gap:6px;
+  align-items:center;
+}
+
+.stat{
+  background:rgba(255,255,255,.88);
+  border-radius:10px;
+  padding:5px 9px;
+  min-width:58px;
+  text-align:center;
+  box-shadow:0 3px 12px rgba(0,0,0,.10);
+}
+
+.stat strong{
+  display:block;
+  font-size:17px;
+  font-weight:900;
+}
+
+.stat span{
+  font-size:8px;
+  color:var(--muted);
+  font-weight:700;
+}
+
+.lives{
+  display:flex;
+  gap:2px;
+  font-size:17px;
+}
+
+#gameArea{
+  position:relative;
+  flex:1;
+  min-height:0;
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:0 10px;
+}
+
+#gameCanvas{
+  display:block;
+  border-radius:16px;
+  box-shadow:0 12px 35px rgba(0,0,0,.18);
+  background:#72c7f6;
+  touch-action:none;
+}
+
+.controls{
+  position:absolute;
+  right:18px;
+  top:12px;
+  display:flex;
+  gap:7px;
+  z-index:20;
+}
+
+.iconBtn{
+  width:42px;
+  height:42px;
+  border:0;
+  border-radius:12px;
+  background:rgba(255,255,255,.94);
+  box-shadow:0 5px 16px rgba(0,0,0,.15);
+  font-size:20px;
+  cursor:pointer;
+}
+
+.iconBtn:active{
+  transform:scale(.94);
+}
+
+.combo{
+  position:absolute;
+  left:18px;
+  bottom:18px;
+  padding:8px 13px;
+  border-radius:14px;
+  background:linear-gradient(90deg,#ffd166,#ff8c42);
+  color:#351a00;
+  font-weight:900;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+  display:none;
+  z-index:20;
+}
+
+footer{
+  flex:0 0 auto;
+  text-align:center;
+  padding:5px;
+  font-size:10px;
+  color:#234;
+}
+
+/* MODALS */
+
+.overlay{
+  position:absolute;
+  inset:0;
+  z-index:100;
+  background:rgba(0,0,0,.40);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+
+.panel{
+  width:min(520px,94vw);
+  max-height:90vh;
+  overflow:auto;
+  background:var(--panel);
+  border-radius:20px;
+  padding:22px;
+  box-shadow:0 25px 70px rgba(0,0,0,.25);
+}
+
+.panel h2{
+  margin:0 0 7px;
+  font-size:25px;
+}
+
+.panel p{
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-top:16px;
+}
+
+.btn{
+  border:0;
+  border-radius:12px;
+  padding:12px 16px;
+  background:#fff;
+  box-shadow:0 5px 16px rgba(0,0,0,.10);
+  font-weight:800;
+  cursor:pointer;
+  font-size:14px;
+}
+
+.btn.primary{
+  background:var(--accent);
+  color:white;
+}
+
+.btn:active{
+  transform:scale(.97);
+}
+
+input,select{
+  width:100%;
+  padding:12px;
+  border:1px solid #ccd6dd;
+  border-radius:10px;
+  font-size:16px;
+  margin-top:6px;
+  background:white;
+}
+
+.field{
+  margin-top:12px;
+}
+
+.field label{
+  font-size:13px;
+  font-weight:800;
+}
+
+.setting{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:11px 0;
+  border-bottom:1px solid #e8edf0;
+}
+
+.setting input{
+  width:auto;
+  margin:0;
+}
+
+.rankList{
+  margin-top:15px;
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid #e1e7eb;
+}
+
+.rankRow{
+  display:grid;
+  grid-template-columns:42px 1fr 80px;
+  padding:10px;
+  background:white;
+  border-bottom:1px solid #edf0f2;
+  align-items:center;
+}
+
+.rankRow:last-child{
+  border-bottom:0;
+}
+
+.rank{
+  font-weight:900;
+}
+
+.player{
+  font-weight:700;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.points{
+  text-align:right;
+  font-weight:900;
+}
+
+.myRank{
+  margin-top:15px;
+  padding:12px;
+  border-radius:12px;
+  background:#fff4df;
+  font-weight:800;
+}
+
+.hidden{
+  display:none!important;
+}
+
+.namePreview{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:5px;
+}
+
+#fps{
+  position:absolute;
+  left:10px;
+  top:10px;
+  padding:4px 7px;
+  border-radius:6px;
+  background:rgba(0,0,0,.35);
+  color:white;
+  font-size:10px;
+  display:none;
+}
+
+@media(max-width:600px){
+
+  header{
+    padding:7px 8px;
+  }
+
+  .title{
+    font-size:16px;
+  }
+
+  .subtitle{
+    display:none;
+  }
+
+  .hud{
+    gap:3px;
+  }
+
+  .stat{
+    min-width:48px;
+    padding:4px 5px;
+  }
+
+  .stat strong{
+    font-size:14px;
+  }
+
+  .stat span{
+    font-size:7px;
+  }
+
+  .lives{
+    font-size:14px;
+  }
+
+  .panel{
+    padding:18px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+
+<header>
+  <div>
+    <div class="title">🐦 BIRD SHOOTER</div>
+    <div class="subtitle">How long can you survive?</div>
+  </div>
+
+  <div class="hud">
+
+    <div class="stat">
+      <strong id="score">0</strong>
+      <span>SCORE</span>
+    </div>
+
+    <div class="stat">
+      <strong id="best">0</strong>
+      <span>BEST</span>
+    </div>
+
+    <div class="stat">
+      <strong id="mult">x1</strong>
+      <span>COMBO</span>
+    </div>
+
+    <div id="lives" class="lives"></div>
+
+  </div>
+</header>
+
+<div id="gameArea">
+
+  <canvas id="gameCanvas"></canvas>
+
+  <div class="controls">
+
+    <button class="iconBtn" id="pauseBtn" aria-label="Pause">
+      ⏸️
+    </button>
+
+    <button class="iconBtn" id="settingsBtn" aria-label="Settings">
+      ⚙️
+    </button>
+
+  </div>
+
+  <div id="comboDisplay" class="combo"></div>
+
+  <div id="fps">60 FPS</div>
+
+  <!-- MAIN MENU -->
+
+  <div id="menu" class="overlay">
+
+    <div class="panel">
+
+      <h2>🐦 Bird Shooter</h2>
+
+      <p>
+        Shoot flying birds, build combos and survive as long as possible.
+        Different birds give different rewards.
+      </p>
+
+      <div id="welcomeName" class="namePreview"></div>
+
+      <div class="buttons">
+
+        <button class="btn primary" id="playBtn">
+          ▶️ PLAY
+        </button>
+
+        <button class="btn" id="rankBtn">
+          🏆 RANKS
+        </button>
+
+        <button class="btn" id="howBtn">
+          ❓ HOW TO PLAY
+        </button>
+
+        <button class="btn" id="menuSettingsBtn">
+          ⚙️ SETTINGS
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- NAME -->
+
+  <div id="nameModal" class="overlay hidden">
+
+    <div class="panel">
+
+      <h2>👤 Player Name</h2>
+
+      <p>
+        Enter your name before your first game.
+        We remember it on this device.
+      </p>
+
+      <div class="field">
+
+        <label>Your Name</label>
+
+        <input
+          id="playerNameInput"
+          type="text"
+          maxlength="20"
+          autocomplete="name"
+          placeholder="Enter your name"
+        >
+
+      </div>
+
+      <div class="buttons">
+
+        <button class="btn primary" id="saveNameBtn">
+          CONTINUE
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- SETTINGS -->
+
+  <div id="settingsModal" class="overlay hidden">
+
+    <div class="panel">
+
+      <h2>⚙️ Settings</h2>
+
+      <div class="setting">
+        <span>🔊 Sound Effects</span>
+        <input type="checkbox" id="soundToggle">
+      </div>
+
+      <div class="setting">
+        <span>🎵 Music</span>
+        <input type="checkbox" id="musicToggle">
+      </div>
+
+      <div class="setting">
+        <span>📳 Vibration</span>
+        <input type="checkbox" id="vibrationToggle">
+      </div>
+
+      <div class="setting">
+        <span>📊 Show FPS</span>
+        <input type="checkbox" id="fpsToggle">
+      </div>
+
+      <div class="field">
+
+        <label>Graphics Quality</label>
+
+        <select id="qualitySelect">
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+
+      </div>
+
+      <div class="buttons">
+
+        <button class="btn" id="changeNameBtn">
+          👤 Change Name
+        </button>
+
+        <button class="btn" id="resetScoreBtn">
+          🗑️ Reset Local Scores
+        </button>
+
+        <button class="btn primary" id="closeSettingsBtn">
+          CLOSE
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- PAUSE -->
+
+  <div id="pauseModal" class="overlay hidden">
+
+    <div class="panel">
+
+      <h2>⏸️ Game Paused</h2>
+
+      <p>
+        Your game is paused. Opening settings will NOT resume the game.
+      </p>
+
+      <div class="buttons">
+
+        <button class="btn primary" id="resumeBtn">
+          ▶️ RESUME
+        </button>
+
+        <button class="btn" id="pauseSettingsBtn">
+          ⚙️ SETTINGS
+        </button>
+
+        <button class="btn" id="restartBtn">
+          🔄 RESTART
+        </button>
+
+        <button class="btn" id="pauseMenuBtn">
+          🏠 MAIN MENU
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- HOW TO -->
+
+  <div id="howModal" class="overlay hidden">
+
+    <div class="panel">
+
+      <h2>❓ How To Play</h2>
+
+      <p>
+        🎯 Tap directly on a bird to shoot it.
+      </p>
+
+      <p>
+        🔥 Consecutive hits increase your combo multiplier.
+      </p>
+
+      <p>
+        ❤️ You start with 3 lives.
+      </p>
+
+      <p>
+        🐦 Different birds have different speeds and rewards.
+      </p>
+
+      <p>
+        💨 Fast and small birds give more points.
+      </p>
+
+      <p>
+        🛡️ Armored birds require two hits and give a large reward.
+      </p>
+
+      <p>
+        🚫 Missing shots or allowing birds to escape breaks your combo.
+      </p>
+
+      <div class="buttons">
+
+        <button class="btn primary" id="closeHowBtn">
+          GOT IT
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- RANKS -->
+
+  <div id="rankModal" class="overlay hidden">
+
+    <div class="panel">
+
+      <h2>🏆 All-Time Ranks</h2>
+
+      <p>
+        Global Top 10 scores from players on all devices.
+      </p>
+
+      <div id="rankList" class="rankList"></div>
+
+      <div id="currentRank" class="myRank"></div>
+
+      <div class="buttons">
+
+        <button class="btn primary" id="closeRankBtn">
+          CLOSE
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- GAME OVER -->
+
+  <div id="gameOverModal" class="overlay hidden">
+
+    <div class="panel">
+
+      <h2>💥 GAME OVER</h2>
+
+      <p id="finalScore"></p>
+
+      <p id="finalPlayer"></p>
+
+      <div class="buttons">
+
+        <button class="btn primary" id="playAgainBtn">
+          🔄 PLAY AGAIN
+        </button>
+
+        <button class="btn" id="gameOverRankBtn">
+          🏆 VIEW RANKS
+        </button>
+
+        <button class="btn" id="gameOverMenuBtn">
+          🏠 MAIN MENU
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<footer>
+  Tap birds to shoot • Build combos • Beat the leaderboard
+</footer>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+/* ============================================================
+   BIRD SHOOTER
+   ============================================================ */
+
+"use strict";
+
+
+/* ------------------------------------------------------------
+   SUPABASE GLOBAL LEADERBOARD
+------------------------------------------------------------ */
+
+const SUPABASE_URL =
+  "https://zwqszqzctdtrlgjdrbqg.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_YpfcW89Wb40CIs-id60pww_TB0YsClc";
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+function getDeviceId(){
+
+  let id =
+    localStorage.getItem(
+      "birdShooterDeviceId"
+    );
+
+  if(!id){
+
+    id = crypto.randomUUID();
+
+    localStorage.setItem(
+      "birdShooterDeviceId",
+      id
+    );
+
+  }
+
+  return id;
+
+}
+
+const DEVICE_ID = getDeviceId();
+
+async function submitGlobalScore(playerName,score){
+
+  const cleanName =
+    String(playerName || "Player")
+      .trim()
+      .replace(/[<>]/g,"")
+      .slice(0,20) || "Player";
+
+  const cleanScore =
+    Math.max(
+      0,
+      Math.floor(Number(score) || 0)
+    );
+
+  const {error} =
+    await supabaseClient
+      .from("leaderboard")
+      .insert({
+        device_id: DEVICE_ID,
+        player_name: cleanName,
+        score: cleanScore
+      });
+
+  if(error){
+    console.error(
+      "Global score submission failed:",
+      error
+    );
+    throw error;
+  }
+
+  return true;
+
+}
+
+async function getGlobalRanks(){
+
+  const {data,error} =
+    await supabaseClient.rpc(
+      "get_bird_shooter_leaderboard",
+      {
+        p_device_id: DEVICE_ID
+      }
+    );
+
+  if(error){
+    console.error(
+      "Global leaderboard failed:",
+      error
+    );
+    throw error;
+  }
+
+  return data || {
+    top10:[],
+    currentPlayer:null
+  };
+
+}
+
+
+/* ------------------------------------------------------------
+   BASIC UTILITIES
+------------------------------------------------------------ */
+
+const $ = id => document.getElementById(id);
+
+const clamp = (v,min,max) =>
+  Math.max(min,Math.min(max,v));
+
+const rand = (min,max) =>
+  min + Math.random() * (max-min);
+
+const randomInt = (min,max) =>
+  Math.floor(rand(min,max+1));
+
+
+/* ------------------------------------------------------------
+   STORAGE
+------------------------------------------------------------ */
+
+const STORAGE_KEY = "birdShooterData_v4";
+
+function loadData(){
+
+  try{
+
+    const data = JSON.parse(
+      localStorage.getItem(STORAGE_KEY)
+    );
+
+    if(data) return data;
+
+  }catch(e){}
+
+  return {
+    playerName:"",
+    scores:[],
+    best:0,
+
+    settings:{
+      sound:true,
+      music:true,
+      vibration:true,
+      fps:false,
+      quality:"high"
+    }
+
+  };
+
+}
+
+const DATA = loadData();
+
+
+function saveData(){
+
+  try{
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(DATA)
+    );
+
+  }catch(e){}
+
+}
+
+
+/* ------------------------------------------------------------
+   AUDIO
+------------------------------------------------------------ */
+
+class AudioManager{
+
+  constructor(){
+
+    this.ctx=null;
+    this.master=null;
+
+    this.sound=true;
+    this.music=true;
+
+    this.musicTimer=null;
+
+  }
+
+
+  init(){
+
+    if(this.ctx) return;
+
+    try{
+
+      const AC =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+      if(!AC) return;
+
+      this.ctx=new AC();
+
+      this.master=this.ctx.createGain();
+
+      this.master.gain.value=.35;
+
+      this.master.connect(
+        this.ctx.destination
+      );
+
+    }catch(e){}
+
+  }
+
+
+  unlock(){
+
+    this.init();
+
+    if(
+      this.ctx &&
+      this.ctx.state==="suspended"
+    ){
+
+      this.ctx.resume();
+
+    }
+
+  }
+
+
+  tone(
+    frequency,
+    duration,
+    type="sine",
+    volume=.12
+  ){
+
+    if(
+      !this.ctx ||
+      !this.sound
+    ) return;
+
+    const t=this.ctx.currentTime;
+
+    const osc=this.ctx.createOscillator();
+
+    const gain=this.ctx.createGain();
+
+    osc.type=type;
+
+    osc.frequency.setValueAtTime(
+      frequency,t
+    );
+
+    gain.gain.setValueAtTime(
+      volume,t
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      .001,
+      t+duration
+    );
+
+    osc.connect(gain);
+
+    gain.connect(this.master);
+
+    osc.start(t);
+
+    osc.stop(t+duration+.02);
+
+  }
+
+
+  shoot(){
+
+    this.tone(
+      800+Math.random()*250,
+      .07,
+      "square",
+      .08
+    );
+
+  }
+
+
+  hit(){
+
+    this.tone(
+      500+Math.random()*500,
+      .15,
+      "triangle",
+      .14
+    );
+
+  }
+
+
+  escape(){
+
+    this.tone(
+      180,
+      .3,
+      "sawtooth",
+      .07
+    );
+
+  }
+
+
+  combo(){
+
+    this.tone(
+      900,
+      .18,
+      "sine",
+      .12
+    );
+
+  }
+
+
+  gameOver(){
+
+    this.tone(
+      180,
+      .5,
+      "sawtooth",
+      .1
+    );
+
+  }
+
+
+  startMusic(){
+
+    if(!this.music || this.musicTimer) return;
+
+    this.init();
+
+    if(!this.ctx) return;
+
+    const notes=[
+      261.63,
+      329.63,
+      392.00,
+      329.63,
+      293.66,
+      349.23,
+      440.00,
+      349.23
+    ];
+
+    let index=0;
+
+    const playNote=()=>{
+
+      if(
+        !this.music ||
+        !this.ctx
+      ) return;
+
+      const oldSound=this.sound;
+
+      this.sound=true;
+
+      this.tone(
+        notes[index%notes.length],
+        .28,
+        "sine",
+        .035
+      );
+
+      this.sound=oldSound;
+
+      index++;
+
+    };
+
+    playNote();
+
+    this.musicTimer=setInterval(
+      playNote,
+      360
+    );
+
+  }
+
+
+  stopMusic(){
+
+    if(this.musicTimer){
+
+      clearInterval(
+        this.musicTimer
+      );
+
+      this.musicTimer=null;
+
+    }
+
+  }
+
+}
+
+
+/* ------------------------------------------------------------
+   PARTICLES
+------------------------------------------------------------ */
+
+class Particle{
+
+  constructor(){
+
+    this.alive=false;
+
+  }
+
+
+  init(
+    x,
+    y,
+    vx,
+    vy,
+    life,
+    size,
+    color
+  ){
+
+    this.x=x;
+    this.y=y;
+
+    this.vx=vx;
+    this.vy=vy;
+
+    this.life=life;
+    this.maxLife=life;
+
+    this.size=size;
+
+    this.color=color;
+
+    this.alive=true;
+
+  }
+
+
+  update(dt){
+
+    if(!this.alive) return;
+
+    this.life-=dt;
+
+    if(this.life<=0){
+
+      this.alive=false;
+      return;
+
+    }
+
+    this.x+=this.vx*dt;
+    this.y+=this.vy*dt;
+
+    this.vy+=250*dt;
+
+  }
+
+
+  draw(ctx){
+
+    if(!this.alive) return;
+
+    ctx.save();
+
+    ctx.globalAlpha=
+      this.life/this.maxLife;
+
+    ctx.fillStyle=this.color;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      this.x,
+      this.y,
+      this.size,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.restore();
+
+  }
+
+}
+
+
+/* ------------------------------------------------------------
+   BIRD
+------------------------------------------------------------ */
+
+class Bird{
+
+  constructor(){
+
+    this.alive=false;
+
+  }
+
+
+  init(type,x,y,vx,vy,dir){
+
+    this.type=type;
+
+    this.x=x;
+    this.y=y;
+
+    this.vx=vx;
+    this.vy=vy;
+
+    this.dir=dir;
+
+    this.hp=type.hp;
+
+    this.maxHp=type.hp;
+
+    this.radius=type.radius;
+
+    this.points=type.points;
+
+    this.phase=Math.random()*Math.PI*2;
+
+    this.wingPhase=Math.random()*Math.PI*2;
+
+    this.age=0;
+
+    this.alive=true;
+
+  }
+
+
+  update(dt){
+
+    if(!this.alive) return;
+
+    this.age+=dt;
+
+    this.wingPhase+=dt*12;
+
+    this.x+=this.vx*dt;
+
+    this.y+=this.vy*dt;
+
+    if(this.type.pattern==="sine"){
+
+      this.y +=
+        Math.sin(
+          this.age*5+
+          this.phase
+        ) *
+        45 *
+        dt;
+
+    }
+
+    if(this.type.pattern==="zigzag"){
+
+      this.y +=
+        Math.sign(
+          Math.sin(
+            this.age*7+
+            this.phase
+          )
+        ) *
+        75 *
+        dt;
+
+    }
+
+    if(this.type.pattern==="wave"){
+
+      this.y +=
+        Math.sin(
+          this.age*3+
+          this.phase
+        ) *
+        80 *
+        dt;
+
+    }
+
+  }
+
+
+  draw(ctx){
+
+    if(!this.alive) return;
+
+    ctx.save();
+
+    ctx.translate(
+      this.x,
+      this.y
+    );
+
+    if(this.dir<0){
+
+      ctx.scale(-1,1);
+
+    }
+
+    const r=this.radius;
+
+    const wing=
+      Math.sin(
+        this.wingPhase
+      )*.35;
+
+    /* shadow */
+
+    ctx.save();
+
+    ctx.globalAlpha=.15;
+
+    ctx.fillStyle="#000";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      0,
+      r*.9,
+      r*1.1,
+      r*.22,
+      0,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.restore();
+
+
+    /* tail */
+
+    ctx.fillStyle=
+      this.type.tail;
+
+    ctx.beginPath();
+
+    ctx.moveTo(-r*.7,0);
+
+    ctx.lineTo(
+      -r*1.45,
+      -r*.55
+    );
+
+    ctx.lineTo(
+      -r*1.25,
+      r*.15
+    );
+
+    ctx.lineTo(
+      -r*1.5,
+      r*.6
+    );
+
+    ctx.lineTo(
+      -r*.55,
+      r*.35
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    /* body */
+
+    const bodyGradient=
+      ctx.createLinearGradient(
+        -r,
+        -r,
+        r,
+        r
+      );
+
+    bodyGradient.addColorStop(
+      0,
+      this.type.light
+    );
+
+    bodyGradient.addColorStop(
+      1,
+      this.type.color
+    );
+
+    ctx.fillStyle=bodyGradient;
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      0,
+      0,
+      r,
+      r*.67,
+      0,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* wing */
+
+    ctx.save();
+
+    ctx.rotate(wing);
+
+    ctx.fillStyle=
+      this.type.wing;
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      -r*.15,
+      .05*r,
+      r*.65,
+      r*.28,
+      -.2,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.restore();
+
+
+    /* head */
+
+    ctx.fillStyle=
+      this.type.head;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      r*.48,
+      -r*.28,
+      r*.48,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* eye white */
+
+    ctx.fillStyle="#fff";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      r*.65,
+      -r*.4,
+      r*.17,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* pupil */
+
+    ctx.fillStyle="#111";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      r*.70,
+      -r*.4,
+      r*.08,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* beak */
+
+    ctx.fillStyle=
+      this.type.beak;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      r*.85,
+      -r*.27
+    );
+
+    ctx.lineTo(
+      r*1.35,
+      -r*.08
+    );
+
+    ctx.lineTo(
+      r*.85,
+      r*.05
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    /* legs */
+
+    ctx.strokeStyle=
+      this.type.legs;
+
+    ctx.lineWidth=
+      Math.max(1,r*.08);
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      -r*.05,
+      r*.55
+    );
+
+    ctx.lineTo(
+      -r*.1,
+      r*.9
+    );
+
+    ctx.moveTo(
+      r*.3,
+      r*.5
+    );
+
+    ctx.lineTo(
+      r*.35,
+      r*.85
+    );
+
+    ctx.stroke();
+
+
+    /* armored bird */
+
+    if(this.maxHp>1){
+
+      ctx.strokeStyle=
+        "rgba(255,255,255,.75)";
+
+      ctx.lineWidth=2;
+
+      ctx.beginPath();
+
+      ctx.arc(
+        0,
+        0,
+        r+3,
+        0,
+        Math.PI*2
+      );
+
+      ctx.stroke();
+
+    }
+
+
+    ctx.restore();
+
+  }
+
+}
+
+
+/* ------------------------------------------------------------
+   GAME
+------------------------------------------------------------ */
+
+class Game{
+
+  constructor(){
+
+    this.canvas=$("gameCanvas");
+
+    this.ctx=
+      this.canvas.getContext(
+        "2d"
+      );
+
+    this.audio=
+      new AudioManager();
+
+    this.birds=[];
+
+    this.particles=[];
+
+    this.score=0;
+
+    this.lives=3;
+
+    this.combo=0;
+
+    this.multiplier=1;
+
+    this.elapsed=0;
+
+    this.spawnTimer=.3;
+
+    this.lastTime=
+      performance.now();
+
+    this.running=true;
+
+    this.state="MENU";
+
+    this.pointer={
+      x:0,
+      y:0,
+      active:false,
+      lastShot:0
+    };
+
+    this.width=480;
+    this.height=800;
+
+    this.best=
+      Number(DATA.best)||0;
+
+    this.types={
+
+      normal:{
+        radius:20,
+        speed:135,
+        points:50,
+        hp:1,
+        color:"#f4b942",
+        light:"#ffe49a",
+        head:"#f4b942",
+        wing:"#fff5d6",
+        tail:"#d58e1e",
+        beak:"#ff8c32",
+        legs:"#774b22",
+        pattern:"sine"
+      },
+
+      fast:{
+        radius:17,
+        speed:245,
+        points:100,
+        hp:1,
+        color:"#ef476f",
+        light:"#ff9bb1",
+        head:"#ef476f",
+        wing:"#ffd6df",
+        tail:"#c52c52",
+        beak:"#ffb703",
+        legs:"#663344",
+        pattern:"straight"
+      },
+
+      small:{
+        radius:12,
+        speed:205,
+        points:175,
+        hp:1,
+        color:"#06b6a4",
+        light:"#70e8dc",
+        head:"#06b6a4",
+        wing:"#d8fffa",
+        tail:"#048276",
+        beak:"#ffcf56",
+        legs:"#15544e",
+        pattern:"zigzag"
+      },
+
+      large:{
+        radius:31,
+        speed:105,
+        points:125,
+        hp:1,
+        color:"#845ec2",
+        light:"#bfa7ed",
+        head:"#845ec2",
+        wing:"#eadfff",
+        tail:"#624398",
+        beak:"#ffb347",
+        legs:"#49356e",
+        pattern:"sine"
+      },
+
+      rare:{
+        radius:23,
+        speed:175,
+        points:300,
+        hp:1,
+        color:"#f9c74f",
+        light:"#fff1a8",
+        head:"#f9c74f",
+        wing:"#fff9dc",
+        tail:"#d49b15",
+        beak:"#f3722c",
+        legs:"#72551a",
+        pattern:"wave"
+      },
+
+      armored:{
+        radius:26,
+        speed:125,
+        points:600,
+        hp:2,
+        color:"#68747e",
+        light:"#b6c0c8",
+        head:"#68747e",
+        wing:"#d9e0e5",
+        tail:"#45515a",
+        beak:"#ffb703",
+        legs:"#343b40",
+        pattern:"sine"
+      }
+
+    };
+
+    this.resize();
+
+    this.bind();
+
+    this.updateHUD();
+
+    requestAnimationFrame(
+      t=>this.loop(t)
+    );
+
+  }
+
+
+  resize(){
+
+    const headerHeight=
+      document.querySelector(
+        "header"
+      ).offsetHeight;
+
+    const footerHeight=
+      document.querySelector(
+        "footer"
+      ).offsetHeight;
+
+    const availableHeight=
+      window.innerHeight -
+      headerHeight -
+      footerHeight -
+      10;
+
+    const maxWidth=
+      Math.min(
+        window.innerWidth-20,
+        540
+      );
+
+    const ratio=0.60;
+
+    let w=maxWidth;
+
+    let h=
+      Math.min(
+        availableHeight,
+        Math.floor(w/ratio)
+      );
+
+    if(
+      h >
+      availableHeight
+    ){
+
+      h=availableHeight;
+
+      w=Math.floor(
+        h*ratio
+      );
+
+    }
+
+    w=Math.max(280,w);
+
+    h=Math.max(420,h);
+
+    this.width=Math.floor(w);
+
+    this.height=Math.floor(h);
+
+    const dpr=
+      Math.min(
+        window.devicePixelRatio||1,
+        2
+      );
+
+    this.dpr=dpr;
+
+    this.canvas.width=
+      Math.floor(
+        this.width*dpr
+      );
+
+    this.canvas.height=
+      Math.floor(
+        this.height*dpr
+      );
+
+    this.canvas.style.width=
+      this.width+"px";
+
+    this.canvas.style.height=
+      this.height+"px";
+
+    this.ctx.setTransform(
+      dpr,
+      0,
+      0,
+      dpr,
+      0,
+      0
+    );
+
+  }
+
+
+  bind(){
+
+    window.addEventListener(
+      "resize",
+      ()=>this.resize()
+    );
+
+
+    /* IMPORTANT:
+       Coordinate calculation is based on the
+       displayed canvas dimensions, not CSS viewport.
+    */
+
+    this.canvas.addEventListener(
+      "pointerdown",
+      e=>{
+
+        if(
+          this.state!=="PLAYING"
+        ) return;
+
+        e.preventDefault();
+
+        this.audio.unlock();
+
+        const p=
+          this.getPointer(e);
+
+        this.pointer.x=p.x;
+        this.pointer.y=p.y;
+
+        this.pointer.active=true;
+
+        this.shoot();
+
+        try{
+          this.canvas.setPointerCapture(
+            e.pointerId
+          );
+        }catch(err){}
+
+      },
+      {passive:false}
+    );
+
+
+    this.canvas.addEventListener(
+      "pointermove",
+      e=>{
+
+        if(
+          !this.pointer.active
+        ) return;
+
+        const p=
+          this.getPointer(e);
+
+        this.pointer.x=p.x;
+        this.pointer.y=p.y;
+
+      },
+      {passive:false}
+    );
+
+
+    this.canvas.addEventListener(
+      "pointerup",
+      e=>{
+
+        this.pointer.active=false;
+
+        try{
+          this.canvas.releasePointerCapture(
+            e.pointerId
+          );
+        }catch(err){}
+
+      }
+    );
+
+
+    this.canvas.addEventListener(
+      "pointercancel",
+      ()=>{
+        this.pointer.active=false;
+      }
+    );
+
+
+    $("playBtn").onclick=
+      ()=>this.requestStart();
+
+
+    $("playAgainBtn").onclick=
+      ()=>this.startGame();
+
+
+    $("pauseBtn").onclick=
+      ()=>this.pause();
+
+
+    $("resumeBtn").onclick=
+      ()=>this.resume();
+
+
+    $("restartBtn").onclick=
+      ()=>this.startGame();
+
+
+    $("pauseMenuBtn").onclick=
+      ()=>{
+
+        this.closeAllModals();
+
+        this.state="MENU";
+
+        $("menu").classList.remove(
+          "hidden"
+        );
+
+      };
+
+
+    $("settingsBtn").onclick=
+      ()=>this.openSettings();
+
+
+    $("menuSettingsBtn").onclick=
+      ()=>this.openSettings();
+
+
+    $("pauseSettingsBtn").onclick=
+      ()=>this.openSettings();
+
+
+    $("closeSettingsBtn").onclick=
+      ()=>{
+
+        $("settingsModal")
+          .classList.add("hidden");
+
+        if(this.state==="SETTINGS_PAUSED"){
+
+          this.state="PAUSED";
+
+          $("pauseModal")
+            .classList.remove("hidden");
+
+        }else{
+
+          this.state="MENU";
+
+          $("menu")
+            .classList.remove("hidden");
+
+        }
+
+      };
+
+
+    $("howBtn").onclick=
+      ()=>{
+
+        $("menu").classList.add(
+          "hidden"
+        );
+
+        $("howModal").classList.remove(
+          "hidden"
+        );
+
+      };
+
+
+    $("closeHowBtn").onclick=
+      ()=>{
+
+        $("howModal").classList.add(
+          "hidden"
+        );
+
+        $("menu").classList.remove(
+          "hidden"
+        );
+
+      };
+
+
+    $("rankBtn").onclick=
+      ()=>this.showRanks();
+
+
+    $("gameOverRankBtn").onclick=
+      ()=>{
+
+        $("gameOverModal")
+          .classList.add("hidden");
+
+        this.showRanks();
+
+      };
+
+
+    $("closeRankBtn").onclick=
+      ()=>{
+
+        $("rankModal")
+          .classList.add("hidden");
+
+        if(
+          this.state==="GAME_OVER"
+        ){
+
+          $("gameOverModal")
+            .classList.remove("hidden");
+
+        }else{
+
+          $("menu")
+            .classList.remove("hidden");
+
+          this.state="MENU";
+
+        }
+
+      };
+
+
+    $("saveNameBtn").onclick=
+      ()=>this.savePlayerName();
+
+
+    $("changeNameBtn").onclick=
+      ()=>{
+
+        $("settingsModal")
+          .classList.add("hidden");
+
+        $("playerNameInput").value=
+          DATA.playerName||"";
+
+        $("nameModal")
+          .classList.remove("hidden");
+
+      };
+
+
+    $("resetScoreBtn").onclick=
+      ()=>{
+
+        if(
+          confirm(
+            "Delete all locally stored scores?"
+          )
+        ){
+
+          DATA.scores=[];
+
+          DATA.best=0;
+
+          this.best=0;
+
+          saveData();
+
+          this.updateHUD();
+
+          alert(
+            "Local scores have been reset."
+          );
+
+        }
+
+      };
+
+
+    $("soundToggle").onchange=
+      e=>{
+
+        DATA.settings.sound=
+          e.target.checked;
+
+        this.audio.sound=
+          DATA.settings.sound;
+
+        saveData();
+
+      };
+
+
+    $("musicToggle").onchange=
+      e=>{
+
+        DATA.settings.music=
+          e.target.checked;
+
+        this.audio.music=
+          DATA.settings.music;
+
+        if(
+          DATA.settings.music
+        ){
+
+          this.audio.unlock();
+
+          this.audio.startMusic();
+
+        }else{
+
+          this.audio.stopMusic();
+
+        }
+
+        saveData();
+
+      };
+
+
+    $("vibrationToggle").onchange=
+      e=>{
+
+        DATA.settings.vibration=
+          e.target.checked;
+
+        saveData();
+
+      };
+
+
+    $("fpsToggle").onchange=
+      e=>{
+
+        DATA.settings.fps=
+          e.target.checked;
+
+        $("fps").style.display=
+          DATA.settings.fps
+          ? "block"
+          : "none";
+
+        saveData();
+
+      };
+
+
+    $("qualitySelect").onchange=
+      e=>{
+
+        DATA.settings.quality=
+          e.target.value;
+
+        saveData();
+
+      };
+
+
+    document.addEventListener(
+      "visibilitychange",
+      ()=>{
+
+        if(
+          document.hidden &&
+          this.state==="PLAYING"
+        ){
+
+          this.pause();
+
+        }
+
+      }
+    );
+
+  }
+
+
+  getPointer(e){
+
+    const rect=
+      this.canvas.getBoundingClientRect();
+
+    /*
+      FIX:
+      Use CSS displayed size to calculate
+      game coordinates.
+
+      Previously canvas.width included DPR,
+      causing touch coordinates to be offset
+      on many phones.
+    */
+
+    const x=
+      (e.clientX-rect.left) /
+      rect.width *
+      this.width;
+
+    const y=
+      (e.clientY-rect.top) /
+      rect.height *
+      this.height;
+
+    return {
+      x:clamp(x,0,this.width),
+      y:clamp(y,0,this.height)
+    };
+
+  }
+
+
+  requestStart(){
+
+    if(!DATA.playerName){
+
+      $("playerNameInput").value="";
+
+      $("menu").classList.add(
+        "hidden"
+      );
+
+      $("nameModal").classList.remove(
+        "hidden"
+      );
+
+      $("playerNameInput").focus();
+
+      return;
+
+    }
+
+    this.startGame();
+
+  }
+
+
+  savePlayerName(){
+
+    let name=
+      $("playerNameInput")
+      .value
+      .trim();
+
+    if(!name){
+
+      alert(
+        "Please enter your name."
+      );
+
+      return;
+
+    }
+
+    name=
+      name
+      .replace(/[<>]/g,"")
+      .slice(0,20);
+
+    DATA.playerName=name;
+
+    saveData();
+
+    $("welcomeName").textContent=
+      "Welcome back, "+
+      DATA.playerName+
+      " 👋";
+
+    $("nameModal").classList.add(
+      "hidden"
+    );
+
+    this.startGame();
+
+  }
+
+
+  startGame(){
+
+    if(!DATA.playerName){
+
+      this.requestStart();
+
+      return;
+
+    }
+
+    this.closeAllModals();
+
+    this.state="PLAYING";
+
+    this.score=0;
+
+    this.lives=3;
+
+    this.combo=0;
+
+    this.multiplier=1;
+
+    this.elapsed=0;
+
+    this.spawnTimer=.2;
+
+    this.birds=[];
+
+    this.particles=[];
+
+    this.lastTime=
+      performance.now();
+
+    this.pointer.lastShot=0;
+
+    this.updateHUD();
+
+    this.audio.unlock();
+
+    this.audio.sound=
+      DATA.settings.sound;
+
+    this.audio.music=
+      DATA.settings.music;
+
+    if(
+      DATA.settings.music
+    ){
+
+      this.audio.startMusic();
+
+    }
+
+  }
+
+
+  pause(){
+
+    if(
+      this.state!=="PLAYING"
+    ) return;
+
+    this.state="PAUSED";
+
+    $("pauseModal")
+      .classList.remove("hidden");
+
+  }
+
+
+  resume(){
+
+    if(
+      this.state!=="PAUSED"
+    ) return;
+
+    $("pauseModal")
+      .classList.add("hidden");
+
+    this.state="PLAYING";
+
+    this.lastTime=
+      performance.now();
+
+  }
+
+
+  openSettings(){
+
+    /*
+      Critical pause/settings fix:
+      Opening settings while paused changes
+      state to SETTINGS_PAUSED.
+
+      Game update() only runs when state is
+      PLAYING, therefore game cannot continue.
+    */
+
+    const wasPaused=
+      this.state==="PAUSED";
+
+    $("menu").classList.add(
+      "hidden"
+    );
+
+    $("pauseModal").classList.add(
+      "hidden"
+    );
+
+    $("settingsModal")
+      .classList.remove("hidden");
+
+    this.state=
+      wasPaused
+      ? "SETTINGS_PAUSED"
+      : "SETTINGS";
+
+    this.syncSettingsUI();
+
+  }
+
+
+  syncSettingsUI(){
+
+    $("soundToggle").checked=
+      DATA.settings.sound;
+
+    $("musicToggle").checked=
+      DATA.settings.music;
+
+    $("vibrationToggle").checked=
+      DATA.settings.vibration;
+
+    $("fpsToggle").checked=
+      DATA.settings.fps;
+
+    $("qualitySelect").value=
+      DATA.settings.quality;
+
+  }
+
+
+  closeAllModals(){
+
+    document
+      .querySelectorAll(".overlay")
+      .forEach(
+        el=>el.classList.add("hidden")
+      );
+
+  }
+
+
+  shoot(){
+
+    const now=
+      performance.now();
+
+    if(
+      now-this.pointer.lastShot<
+      110
+    ) return;
+
+    this.pointer.lastShot=now;
+
+    this.audio.shoot();
+
+    let hit=null;
+
+    for(
+      let i=this.birds.length-1;
+      i>=0;
+      i--
+    ){
+
+      const bird=this.birds[i];
+
+      if(!bird.alive) continue;
+
+      const dx=
+        bird.x-this.pointer.x;
+
+      const dy=
+        bird.y-this.pointer.y;
+
+      const distance=
+        Math.hypot(dx,dy);
+
+      if(
+        distance<=
+        bird.radius+9
+      ){
+
+        hit=bird;
+
+        break;
+
+      }
+
+    }
+
+
+    if(hit){
+
+      this.hitBird(hit);
+
+    }else{
+
+      this.resetCombo();
+
+    }
+
+
+    for(let i=0;i<5;i++){
+
+      const angle=
+        rand(
+          0,
+          Math.PI*2
+        );
+
+      const p=
+        new Particle();
+
+      p.init(
+        this.pointer.x,
+        this.pointer.y,
+        Math.cos(angle)*rand(40,130),
+        Math.sin(angle)*rand(40,130),
+        .25,
+        2,
+        "#fff"
+      );
+
+      this.particles.push(p);
+
+    }
+
+  }
+
+
+  hitBird(bird){
+
+    bird.hp--;
+
+    if(
+      bird.hp>0
+    ){
+
+      this.audio.hit();
+
+      return;
+
+    }
+
+
+    bird.alive=false;
+
+    const points=
+      bird.points*
+      this.multiplier;
+
+    this.score+=points;
+
+    this.combo++;
+
+    this.multiplier=
+      clamp(
+        Math.floor(
+          this.combo/2
+        )+1,
+        1,
+        8
+      );
+
+    this.audio.hit();
+
+
+    if(
+      this.combo>=3
+    ){
+
+      this.audio.combo();
+
+      $("comboDisplay").textContent=
+        "🔥 COMBO x"+
+        this.multiplier;
+
+      $("comboDisplay").style.display=
+        "block";
+
+    }
+
+
+    if(
+      DATA.settings.vibration &&
+      navigator.vibrate
+    ){
+
+      navigator.vibrate(
+        bird.maxHp>1
+        ? [20,30,20]
+        : 12
+      );
+
+    }
+
+
+    for(
+      let i=0;
+      i<
+      (bird.radius>25?24:15);
+      i++
+    ){
+
+      const angle=
+        rand(
+          0,
+          Math.PI*2
+        );
+
+      const p=
+        new Particle();
+
+      p.init(
+        bird.x,
+        bird.y,
+        Math.cos(angle)*rand(50,220),
+        Math.sin(angle)*rand(50,220),
+        rand(.4,.9),
+        rand(2,4),
+        i%2
+          ? "#fff"
+          : bird.type.color
+      );
+
+      this.particles.push(p);
+
+    }
+
+
+    this.updateHUD();
+
+  }
+
+
+  resetCombo(){
+
+    this.combo=0;
+
+    this.multiplier=1;
+
+    $("comboDisplay").style.display=
+      "none";
+
+    this.updateHUD();
+
+  }
+
+
+  spawnBird(){
+
+    if(
+      this.birds.length>=
+      this.maxBirds()
+    ) return;
+
+
+    const keys=[
+      "normal",
+      "fast",
+      "small",
+      "large",
+      "rare",
+      "armored"
+    ];
+
+
+    const r=Math.random();
+
+    let key="normal";
+
+
+    /*
+      Better rewards:
+      Normal 50
+      Fast 100
+      Small 175
+      Large 125
+      Rare 300
+      Armored 600
+    */
+
+    if(r<.44){
+
+      key="normal";
+
+    }else if(r<.64){
+
+      key="fast";
+
+    }else if(r<.79){
+
+      key="small";
+
+    }else if(r<.91){
+
+      key="large";
+
+    }else if(r<.97){
+
+      key="rare";
+
+    }else{
+
+      key="armored";
+
+    }
+
+
+    const type=
+      this.types[key];
+
+    const speed=
+      type.speed*
+      (
+        1+
+        Math.min(
+          1.3,
+          this.score/5000
+        )
+      );
+
+
+    let x,y,vx,vy,dir;
+
+
+    if(
+      Math.random()<.5
+    ){
+
+      x=
+        -type.radius-20;
+
+      y=
+        rand(
+          60,
+          this.height-80
+        );
+
+      vx=speed;
+
+      vy=0;
+
+      dir=1;
+
+    }else{
+
+      x=
+        this.width+
+        type.radius+
+        20;
+
+      y=
+        rand(
+          60,
+          this.height-80
+        );
+
+      vx=-speed;
+
+      vy=0;
+
+      dir=-1;
+
+    }
+
+
+    const bird=
+      new Bird();
+
+    bird.init(
+      type,
+      x,
+      y,
+      vx,
+      vy,
+      dir
+    );
+
+    this.birds.push(
+      bird
+    );
+
+  }
+
+
+  maxBirds(){
+
+    return clamp(
+      6+
+      Math.floor(
+        this.score/500
+      ),
+      6,
+      18
+    );
+
+  }
+
+
+  update(dt){
+
+    if(
+      this.state!=="PLAYING"
+    ) return;
+
+
+    this.elapsed+=dt;
+
+
+    /* spawn */
+
+    this.spawnTimer-=dt;
+
+    const interval=
+      clamp(
+        1.15-
+        this.elapsed*.003-
+        this.score*.00001,
+        .28,
+        1.2
+      );
+
+
+    if(
+      this.spawnTimer<=0
+    ){
+
+      this.spawnBird();
+
+      this.spawnTimer=
+        interval*
+        rand(.7,1.15);
+
+    }
+
+
+    /* birds */
+
+    for(
+      const bird of this.birds
+    ){
+
+      if(!bird.alive)
+        continue;
+
+      bird.update(dt);
+
+
+      if(
+        bird.x<
+          -100 ||
+        bird.x>
+          this.width+100 ||
+        bird.y<
+          -150 ||
+        bird.y>
+          this.height+150
+      ){
+
+        bird.alive=false;
+
+        this.lives--;
+
+        this.audio.escape();
+
+        this.resetCombo();
+
+        this.updateHUD();
+
+      }
+
+    }
+
+
+    this.birds=
+      this.birds.filter(
+        b=>b.alive
+      );
+
+
+    /* particles */
+
+    for(
+      const p of this.particles
+    ){
+
+      p.update(dt);
+
+    }
+
+
+    this.particles=
+      this.particles.filter(
+        p=>p.alive
+      );
+
+
+    if(
+      this.lives<=0
+    ){
+
+      this.endGame();
+
+    }
+
+  }
+
+
+  endGame(){
+
+    this.state="GAME_OVER";
+
+    this.audio.stopMusic();
+
+    this.audio.gameOver();
+
+    if(
+      this.score>this.best
+    ){
+
+      this.best=this.score;
+
+      DATA.best=this.best;
+
+    }
+
+
+    this.saveScore();
+
+    /*
+      Save the same completed score to Supabase.
+      Keep the promise so the Ranks screen can wait for it
+      when the player opens the leaderboard immediately.
+    */
+    this.pendingScoreSubmit =
+      submitGlobalScore(
+        DATA.playerName,
+        this.score
+      ).catch(error=>{
+        console.warn(
+          "Score saved locally, but global sync failed.",
+          error
+        );
+        return false;
+      });
+
+    this.updateHUD();
+
+
+    $("finalScore").textContent=
+      "Score: "+
+      this.score;
+
+
+    $("finalPlayer").textContent=
+      "Player: "+
+      DATA.playerName;
+
+
+    $("gameOverModal")
+      .classList.remove("hidden");
+
+  }
+
+
+  saveScore(){
+
+    if(
+      !DATA.playerName
+    ) return;
+
+
+    DATA.scores.push({
+
+      name:DATA.playerName,
+
+      score:this.score,
+
+      date:new Date().toISOString()
+
+    });
+
+
+    /*
+      Keep enough history for ranking.
+      Local browser storage has finite space.
+    */
+
+    DATA.scores.sort(
+      (a,b)=>b.score-a.score
+    );
+
+
+    DATA.scores=
+      DATA.scores.slice(
+        0,
+        1000
+      );
+
+
+    saveData();
+
+  }
+
+
+  async showRanks(){
+
+    const previousState=this.state;
+
+    this.closeAllModals();
+
+    $("rankModal")
+      .classList.remove("hidden");
+
+    this.state=
+      previousState==="GAME_OVER"
+      ? "GAME_OVER"
+      : "RANKS";
+
+    if(this.pendingScoreSubmit){
+      try{
+        await this.pendingScoreSubmit;
+      }catch(error){}
+    }
+
+    await this.renderRanks();
+
+  }
+
+
+  async renderRanks(){
+
+    const container=
+      $("rankList");
+
+    const current=
+      $("currentRank");
+
+    container.innerHTML=
+      '<div class="rankRow">'+
+      '<div>⏳</div>'+
+      '<div>Loading global rankings...</div>'+
+      '<div></div>'+
+      '</div>';
+
+    current.textContent=
+      "Loading your global rank...";
+
+    try{
+
+      const result=
+        await getGlobalRanks();
+
+      const top10=
+        Array.isArray(result?.top10)
+        ? result.top10
+        : [];
+
+      if(!top10.length){
+
+        container.innerHTML=
+          '<div class="rankRow">'+
+          '<div>—</div>'+
+          '<div>No global scores yet</div>'+
+          '<div>—</div>'+
+          '</div>';
+
+      }else{
+
+        container.innerHTML=
+          top10.map(player=>{
+
+            const rank=
+              Number(player.rank);
+
+            const label=
+              rank===1 ? "🥇" :
+              rank===2 ? "🥈" :
+              rank===3 ? "🥉" :
+              "#"+rank;
+
+            return `
+              <div class="rankRow">
+                <div class="rank">
+                  ${label}
+                </div>
+
+                <div class="player">
+                  ${escapeHTML(player.name)}
+                </div>
+
+                <div class="points">
+                  ${Number(player.score).toLocaleString()}
+                </div>
+              </div>
+            `;
+
+          }).join("");
+
+      }
+
+      const me=
+        result?.currentPlayer;
+
+      if(me){
+
+        const myRank=
+          Number(me.rank);
+
+        current.innerHTML=
+          "👤 "+
+          escapeHTML(me.name)+
+          " — Global Rank #"+
+          myRank+
+          " — Best Score: "+
+          Number(me.score).toLocaleString();
+
+        /*
+          The Top 10 is always above. If the current player is
+          outside the Top 10, this box still shows their exact rank.
+        */
+        if(myRank>10){
+          current.innerHTML=
+            "Your Rank — #"+
+            myRank+
+            " · "+
+            escapeHTML(me.name)+
+            " · "+
+            Number(me.score).toLocaleString()+
+            " points";
+        }
+
+      }else{
+
+        current.textContent=
+          "Play and finish one game to receive your global rank.";
+
+      }
+
+    }catch(error){
+
+      /* Offline / network fallback keeps the Ranks screen usable. */
+      const localList=
+        [...DATA.scores]
+          .sort((a,b)=>b.score-a.score)
+          .slice(0,10);
+
+      container.innerHTML=
+        localList.length
+        ? localList.map((item,index)=>`
+            <div class="rankRow">
+              <div class="rank">#${index+1}</div>
+              <div class="player">${escapeHTML(item.name)}</div>
+              <div class="points">${Number(item.score).toLocaleString()}</div>
+            </div>
+          `).join("")
+        : '<div class="rankRow"><div>—</div><div>Leaderboard unavailable</div><div>—</div></div>';
+
+      current.textContent=
+        "Global leaderboard is temporarily unavailable. Showing local scores.";
+
+    }
+
+  }
+
+
+  updateHUD(){
+
+    $("score").textContent=
+      this.score;
+
+    $("best").textContent=
+      Math.max(
+        this.best,
+        this.score
+      );
+
+    $("mult").textContent=
+      "x"+
+      this.multiplier;
+
+
+    $("lives").innerHTML=
+      "❤️".repeat(
+        Math.max(
+          0,
+          this.lives
+        )
+      );
+
+  }
+
+
+  render(){
+
+    const ctx=this.ctx;
+
+    ctx.clearRect(
+      0,
+      0,
+      this.width,
+      this.height
+    );
+
+
+    /* sky */
+
+    const gradient=
+      ctx.createLinearGradient(
+        0,
+        0,
+        0,
+        this.height
+      );
+
+    gradient.addColorStop(
+      0,
+      "#a9e7ff"
+    );
+
+    gradient.addColorStop(
+      1,
+      "#58b7ef"
+    );
+
+    ctx.fillStyle=gradient;
+
+    ctx.fillRect(
+      0,
+      0,
+      this.width,
+      this.height
+    );
+
+
+    /* clouds */
+
+    ctx.save();
+
+    ctx.globalAlpha=.75;
+
+    for(
+      let i=0;
+      i<7;
+      i++
+    ){
+
+      const x=
+        (
+          i*190+
+          this.elapsed*18
+        )%
+        (this.width+180)
+        -90;
+
+      const y=
+        70+
+        (i%3)*55;
+
+      ctx.fillStyle="#fff";
+
+      ctx.beginPath();
+
+      ctx.ellipse(
+        x,
+        y,
+        58,
+        20,
+        0,
+        0,
+        Math.PI*2
+      );
+
+      ctx.ellipse(
+        x-30,
+        y+4,
+        30,
+        17,
+        0,
+        0,
+        Math.PI*2
+      );
+
+      ctx.ellipse(
+        x+30,
+        y+4,
+        32,
+        18,
+        0,
+        0,
+        Math.PI*2
+      );
+
+      ctx.fill();
+
+    }
+
+    ctx.restore();
+
+
+    /* distant hills */
+
+    ctx.fillStyle=
+      "rgba(35,125,76,.20)";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      0,
+      this.height
+    );
+
+    ctx.lineTo(
+      0,
+      this.height-100
+    );
+
+    for(
+      let x=0;
+      x<=this.width;
+      x+=50
+    ){
+
+      ctx.lineTo(
+        x,
+        this.height-
+        80-
+        Math.sin(x*.018)*25
+      );
+
+    }
+
+    ctx.lineTo(
+      this.width,
+      this.height
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    /* birds */
+
+    for(
+      const bird of this.birds
+    ){
+
+      bird.draw(ctx);
+
+    }
+
+
+    /* particles */
+
+    for(
+      const p of this.particles
+    ){
+
+      p.draw(ctx);
+
+    }
+
+
+    /* crosshair */
+
+    if(
+      this.state==="PLAYING"
+    ){
+
+      ctx.save();
+
+      ctx.translate(
+        this.pointer.x,
+        this.pointer.y
+      );
+
+      ctx.strokeStyle=
+        "rgba(255,255,255,.95)";
+
+      ctx.shadowColor=
+        "rgba(0,0,0,.5)";
+
+      ctx.shadowBlur=4;
+
+      ctx.lineWidth=2;
+
+      ctx.beginPath();
+
+      ctx.arc(
+        0,
+        0,
+        16,
+        0,
+        Math.PI*2
+      );
+
+      ctx.stroke();
+
+      ctx.beginPath();
+
+      ctx.moveTo(-25,0);
+
+      ctx.lineTo(-6,0);
+
+      ctx.moveTo(6,0);
+
+      ctx.lineTo(25,0);
+
+      ctx.moveTo(0,-25);
+
+      ctx.lineTo(0,-6);
+
+      ctx.moveTo(0,6);
+
+      ctx.lineTo(0,25);
+
+      ctx.stroke();
+
+      ctx.restore();
+
+    }
+
+  }
+
+
+  loop(timestamp){
+
+    const dt=
+      Math.min(
+        .05,
+        (
+          timestamp-
+          this.lastTime
+        )/1000
+      );
+
+    this.lastTime=
+      timestamp;
+
+
+    this.update(dt);
+
+    this.render();
+
+
+    if(
+      DATA.settings.fps
+    ){
+
+      this.fpsCounter=
+        (this.fpsCounter||0)+1;
+
+      this.fpsTime=
+        (this.fpsTime||0)+dt;
+
+      if(
+        this.fpsTime>=.5
+      ){
+
+        $("fps").textContent=
+          Math.round(
+            this.fpsCounter/
+            this.fpsTime
+          )+
+          " FPS";
+
+        this.fpsCounter=0;
+
+        this.fpsTime=0;
+
+      }
+
+    }
+
+
+    requestAnimationFrame(
+      t=>this.loop(t)
+    );
+
+  }
+
+}
+
+
+/* ------------------------------------------------------------
+   SECURITY / DISPLAY HELPER
+------------------------------------------------------------ */
+
+function escapeHTML(value){
+
+  return String(value)
+    .replace(
+      /[&<>"']/g,
+      c=>({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
+      }[c])
+    );
+
+}
+
+
+/* ------------------------------------------------------------
+   INITIALIZE
+------------------------------------------------------------ */
+
+const game=
+  new Game();
+
+
+/* settings */
+
+game.syncSettingsUI();
+
+
+/* remembered player */
+
+if(DATA.playerName){
+
+  $("welcomeName").textContent=
+    "Welcome back, "+
+    DATA.playerName+
+    " 👋";
+
+}
+
+
+/* unlock audio after user interaction */
+
+document.addEventListener(
+  "pointerdown",
+  ()=>{
+    game.audio.unlock();
+  },
+  {
+    once:true,
+    passive:true
+  }
+);
+
+</script>
+
+</body>
+</html>

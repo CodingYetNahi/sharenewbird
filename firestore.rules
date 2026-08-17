@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /scores/{scoreId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['playerName', 'score', 'createdAt'])
+        && request.resource.data.playerName is string
+        && request.resource.data.playerName.size() > 0
+        && request.resource.data.playerName.size() <= 20
+        && request.resource.data.score is int
+        && request.resource.data.score > 0
+        && request.resource.data.score <= 100000000;
+      allow update, delete: if false;
+    }
+    match /multiplayer_rooms/{roomId} {
+      allow read, write: if true;
+    }
+    // Per-install anonymous player IDs keep names out of document paths. Once a
+    // daily reward is claimed it can never be reset, even by a stale client.
+    match /daily_challenges/{resultId} {
+      allow read: if true;
+      allow create: if request.resource.data.playerId is string
+        && request.resource.data.playerId.size() > 0
+        && request.resource.data.playerId.size() <= 80
+        && request.resource.data.date is string
+        && resultId == request.resource.data.playerId + '_' + request.resource.data.date
+        && request.resource.data.challengeId == request.resource.data.date
+        && request.resource.data.progress is map
+        && request.resource.data.progress.keys().hasOnly(['normal', 'fast', 'small'])
+        && request.resource.data.progress.normal is int
+        && request.resource.data.progress.fast is int
+        && request.resource.data.progress.small is int
+        && request.resource.data.progress.normal >= 0
+        && request.resource.data.progress.fast >= 0
+        && request.resource.data.progress.small >= 0
+        && (!(request.resource.data.get('rewardClaimed', false) == true)
+          || (request.resource.data.completed == true
+            && request.resource.data.playerName is string
+            && request.resource.data.playerName.size() > 0
+            && request.resource.data.playerName.size() <= 20
+            && request.resource.data.reward is int
+            && request.resource.data.reward >= 0
+            && request.resource.data.reward <= 2000));
+      allow update: if request.resource.data.playerId == resource.data.playerId
+        && request.resource.data.date == resource.data.date
+        && request.resource.data.challengeId == resource.data.challengeId
+        && request.resource.data.progress is map
+        && request.resource.data.progress.keys().hasOnly(['normal', 'fast', 'small'])
+        && request.resource.data.progress.normal >= resource.data.progress.normal
+        && request.resource.data.progress.fast >= resource.data.progress.fast
+        && request.resource.data.progress.small >= resource.data.progress.small
+        && (!(resource.data.get('rewardClaimed', false) == true)
+          || request.resource.data.rewardClaimed == true)
+        && (!(request.resource.data.get('rewardClaimed', false) == true)
+          || (request.resource.data.completed == true
+            && request.resource.data.reward is int
+            && request.resource.data.reward >= 0
+            && request.resource.data.reward <= 2000));
+      allow delete: if false;
+    }
+  }
+}

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title description">
+  <title id="title">Shoot the Bird mascot</title>
+  <desc id="description">A cheerful blue and orange arcade bird in flight</desc>
+  <g stroke="#0f2840" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M31 75 8 88l28 5z" fill="#f97316" stroke-width="5"/>
+    <ellipse cx="62" cy="70" rx="39" ry="29" fill="#38bdf8" stroke-width="6"/>
+    <path d="M40 67c9-31 39-35 56-17-25-3-36 13-38 31z" fill="#2563eb" stroke-width="5"/>
+    <circle cx="89" cy="54" r="23" fill="#60a5fa" stroke-width="6"/>
+    <path d="m109 55 16 7-17 8z" fill="#fbbf24" stroke-width="4"/>
+    <circle cx="95" cy="49" r="4.5" fill="#0f172a" stroke="none"/>
+    <circle cx="96.5" cy="47.5" r="1.5" fill="#fff" stroke="none"/>
+    <path d="M50 87c9 11 21 14 34 10" fill="none" stroke="#f8fafc" stroke-width="5"/>
+    <path d="M76 96v14M58 96v14" fill="none" stroke="#f59e0b" stroke-width="5"/>
+  </g>
+</svg>

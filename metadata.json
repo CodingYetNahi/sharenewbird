@@ -1,0 +1,6 @@
+{
+  "name": "Shoot The Bird Game",
+  "description": "An action-packed arcade bird shooting game with combos, custom bird types, and leaderboards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
